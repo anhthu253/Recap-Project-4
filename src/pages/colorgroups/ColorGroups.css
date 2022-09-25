@@ -1,0 +1,31 @@
+.colorgroups {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.colorgroups__button--add {
+  width: 100px;
+  margin: 10px;
+  padding: 5px;
+  border: var(--component-border) black;
+  border-radius: var(--component-radius);
+  background: darkgray;
+}
+
+.colorgroups__button--add:hover {
+  cursor: pointer;
+}
+
+.colorboard__groupname-input {
+  display: none;
+}
+
+.colorboard__groupname {
+  display: none;
+}
+
+.activ {
+  display: block;
+}

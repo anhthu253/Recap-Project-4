@@ -2,105 +2,39 @@ import "./ColorCards.css";
 import ColorCard from "../../components/colorCard/ColorCard";
 import { useState, useEffect } from "react";
 
-const colorsets = [
-  {
-    id: "343",
-    colorCode: "#21AD32",
-    colorName: "Slimy Green",
-    editable: false,
-  },
-  {
-    id: "093",
-    colorCode: "#8885B4",
-    colorName: "Wild Blue Yonder",
-    editable: false,
-  },
-  {
-    id: "3098",
-    colorCode: "#217AAD",
-    colorName: "Matisse",
-    editable: false,
-  },
-];
+function hashtagColor(colorcode) {
+  if (!colorcode.startsWith("#")) colorcode = "#" + colorcode;
+  return colorcode;
+}
 
+function isColorCodeValid(colorcode) {
+  const RegExp = /^#[0-9A-F]{6}$/i;
+  return RegExp.test(colorcode);
+}
 const rootURL = "https://www.thecolorapi.com/id?hex=";
 
-export default function ColorCards() {
-  const [colors, setColors] = useState(
-    () => JSON.parse(localStorage.getItem("colors")) ?? colorsets
-  );
+export default function ColorCards(props) {
+  const {
+    groupid,
+    groupname,
+    groupnameEditable,
+    onEditGroupName,
+    onNewGroupName,
+    colorcards,
+    onAddColor,
+    onUpdateColor,
+    setHexCodeURL,
+  } = props;
+
   const [newcolor, setNewColor] = useState([]);
-  const [hexCodeURL, setHexCodeURL] = useState({});
-
-  function isColorCodeValid(colorcode) {
-    const RegExp = /^#[0-9A-F]{6}$/i;
-    return RegExp.test(colorcode);
-  }
-
-  function hashtagColor(colorcode) {
-    if (!colorcode.startsWith("#")) colorcode = "#" + colorcode;
-    return colorcode;
-  }
-
-  function updateColorCode(id, colorcode) {
-    setColors(() => {
-      if (JSON.stringify(colors).includes(id))
-        return colors.map((color) =>
-          id === color.id
-            ? { ...color, colorCode: hashtagColor(colorcode), editable: false }
-            : color
-        );
-
-      return [
-        ...colors,
-        {
-          id: id,
-          colorCode: hashtagColor(colorcode),
-          colorName: "",
-          editable: false,
-        },
-      ];
-    });
-  }
-
-  function updateHexCodeUrl(id, colorcode) {
-    setHexCodeURL({
-      id: id,
-      url: rootURL + colorcode.replace("#", ""),
-    });
-  }
-
-  async function fetchColorName() {
-    const response = await fetch(hexCodeURL.url);
-    const results = await response.json();
-    setColors(() =>
-      colors.map((color) =>
-        color.id === hexCodeURL.id
-          ? { ...color, colorName: results.name.value }
-          : color
-      )
-    );
-  }
-
-  function addColor(event) {
-    event.preventDefault();
-
-    const formData = new FormData(event.target);
-    let { colorcode } = Object.fromEntries(formData);
-
-    const id = Math.random().toString(36).substring(2);
-    if (!isColorCodeValid(hashtagColor(colorcode))) return;
-    updateColorCode(id, colorcode);
-    updateHexCodeUrl(id, colorcode);
-  }
 
   function deleteColor(id) {
-    setColors(() => colors.filter((color) => color.id !== id));
+    onUpdateColor(colorcards.filter((color) => color.id !== id));
   }
 
-  function toggleEditor(id) {
-    setColors(() =>
-      colors.map((color) => {
+  function switch2Editor(id) {
+    onUpdateColor(
+      colorcards.map((color) => {
         return color.id === id
           ? { ...color, editable: true }
           : { ...color, editable: false };
@@ -110,27 +44,60 @@ export default function ColorCards() {
 
   function editColor(event, id) {
     const colorcodeentered = event.target.value;
-    setColors(() =>
-      colors.map((color) =>
-        color.id === id ? { ...color, editable: false } : color
+    if (!isColorCodeValid(hashtagColor(colorcodeentered))) {
+      onUpdateColor(
+        colorcards.map((color) =>
+          color.id === id ? { ...color, editable: false } : color
+        )
+      );
+      return;
+    }
+    onUpdateColor(
+      colorcards.map((color) =>
+        color.id === id
+          ? {
+              ...color,
+              editable: false,
+              colorCode: hashtagColor(colorcodeentered),
+            }
+          : color
       )
     );
-    if (!isColorCodeValid(hashtagColor(colorcodeentered))) return;
-    updateColorCode(id, colorcodeentered);
-    updateHexCodeUrl(id, colorcodeentered);
+
+    setHexCodeURL({
+      groupID: groupid,
+      cardID: id,
+      url: rootURL + colorcodeentered.replace("#", ""),
+    });
   }
 
   useEffect(() => {
-    localStorage.setItem("colors", JSON.stringify(colors));
-  }, [colors]);
+    localStorage.setItem("colors", JSON.stringify(colorcards));
+  }, [colorcards]);
 
-  useEffect(() => {
-    fetchColorName();
-  }, [hexCodeURL]);
-
+  function handleEnter(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      onNewGroupName(event);
+    }
+  }
   return (
     <div className="colorboard">
-      <form className="colorboard__form" onSubmit={addColor}>
+      <h2
+        className={`colorboard__groupname${!groupnameEditable ? " activ" : ""}`}
+        onClick={onEditGroupName}
+      >
+        {groupname}
+      </h2>
+      <input
+        name="groupname"
+        className={`colorboard__groupname-input${
+          groupnameEditable ? " activ" : ""
+        }`}
+        onKeyDown={handleEnter}
+        onBlur={onNewGroupName}
+      ></input>
+      <form className="colorboard__form" onSubmit={onAddColor}>
         <input
           className="colorboard__colorcode-input"
           type="text"
@@ -146,14 +113,14 @@ export default function ColorCards() {
         </button>
       </form>
       <section className="colorboard__colorcards">
-        {colors.map((color, index) => (
+        {colorcards.map((color, index) => (
           <ColorCard
             key={color.id}
             colorName={color.colorName}
             colorCode={color.colorCode}
             editable={color.editable}
             letDelete={() => deleteColor(color.id)}
-            onEdit={() => toggleEditor(color.id)}
+            onEdit={() => switch2Editor(color.id)}
             onEnter={(event) => editColor(event, color.id)}
           />
         ))}
