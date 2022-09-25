@@ -1,0 +1,39 @@
+.colorbox {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: var(--parent-border);
+}
+
+.colorbox__code--label {
+  padding: 3px;
+  border: var(--component-border);
+  border-radius: var(--component-radius);
+  background-color: var(--label-background);
+  display: none;
+}
+
+.colorbox__code--input {
+  background-color: lightgrey;
+  width: var(--component-width);
+  display: none;
+}
+
+.colorbox__delete {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.colorbox__delete:hover {
+  cursor: pointer;
+}
+
+.activ {
+  display: block;
+}

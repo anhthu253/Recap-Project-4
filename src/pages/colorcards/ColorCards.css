@@ -1,0 +1,46 @@
+.colorboard__colorcards {
+  display: flex;
+  flex-direction: row wrap;
+  gap: 10px;
+}
+
+.colorboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+}
+
+.colorboard__form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 150px;
+  height: 150px;
+  gap: 10px;
+  border: 2px solid;
+  background-color: var(--form-background);
+}
+
+.colorboard__form * {
+  border-radius: var(--component-radius);
+  border: var(--component-border);
+}
+
+.colorboard__submit-button {
+  width: var(--component-width);
+  background-color: grey;
+}
+.colorboard__colorcode-label {
+  height: calc(1rem + 6px);
+  width: calc(var(--component-width) + 6px);
+  background-color: var(--label-background);
+}
+.colorboard__colorcode-input {
+  background: transparent;
+  width: calc(var(--component-width) + 6px);
+}
